@@ -6,8 +6,12 @@
 // /memory stays available everywhere so a fresh project can bootstrap the
 // system; memory_recall self-guards with an init pointer when absent.
 //
+// IMPORTANT: this module must export ONLY the default export (a function).
+// opencode's legacy plugin loader calls every function export as a plugin
+// instance, and any named helper export throws and kills registration.
+//
 // Add to your opencode.json:
-//   { "plugin": ["@rajihawa/memory.md"] }
+//   { "plugin": ["git+https://github.com/rajihawa/memory.md"] }
 
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -19,14 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const { createMemoryRecallTool, findMemoryRoot } = require('../../hooks/memory-tool');
 const { getMemoryInstructions } = require('../../hooks/memory-instructions');
-
-export function parseCommandFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return null;
-  const description = match[1].match(/description:\s*(.+)/)?.[1]?.trim();
-  return { description, template: match[2].trim() };
-}
+const { parseCommandFile } = require('../../hooks/command-file');
 
 export default async ({ client, directory } = {}) => {
   const hasMemory = !!findMemoryRoot(directory || process.cwd());

@@ -10,7 +10,7 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 const { getMemoryInstructions } = require('../hooks/memory-instructions');
 const { createMemoryRecallTool, findMemoryRoot, parseGuide } = require('../hooks/memory-tool');
-const { parseCommandFile } = require('../.opencode/plugins/memory.md.mjs');
+const { parseCommandFile } = require('../hooks/command-file');
 
 // --- fixture tree -----------------------------------------------------------
 
@@ -66,6 +66,17 @@ test('all command files parse to { description, template }', () => {
     assert.ok(parsed, `${file} must parse`);
     assert.ok(parsed.description, `${file} needs a description`);
     assert.ok(parsed.template.length > 20, `${file} needs a real template`);
+  }
+});
+
+test('plugin module exports no functions besides default', async () => {
+  // The legacy plugin loader calls every function export as a plugin instance;
+  // a stray helper export (like the old parseCommandFile) throws and kills
+  // all registration. Guard against it.
+  const mod = await import('../.opencode/plugins/memory.md.mjs');
+  for (const [name, value] of Object.entries(mod)) {
+    if (name === 'default') continue;
+    assert.ok(typeof value !== 'function', `named export "${name}" must not be a function`);
   }
 });
 

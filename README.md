@@ -41,11 +41,16 @@ project/
 
 ## Install
 
-Add to your `opencode.json` — no registry config, no tokens:
+Add to your `opencode.json` (project or `~/.config/opencode/opencode.json`):
 
 ```json
-{ "plugin": ["@rajihawa/memory.md"] }
+{ "plugin": ["git+https://github.com/rajihawa/memory.md"] }
 ```
+
+Install via git — no registry, no tokens, no `.npmrc`, no publishing. The repo
+is public, so every install pulls the latest `main` anonymously. (`npm i
+git+https://github.com/rajihawa/memory.md` works the same way for non-opencode
+use.)
 
 Or run from a checkout (the plugin reuses `hooks/` and `skills/`):
 
@@ -58,6 +63,8 @@ the `/memory-remember` and `/memory-help` commands, the `memory` skill, and the
 save-session nudge only exist where a `MEMORY.md` is found walking up from the
 project root. `/memory` is always available (it is how a project bootstraps),
 and `memory_recall` replies with an init pointer where no memory exists.
+opencode also auto-loads this repo's `AGENTS.md`, so the protocol holds from a
+checkout even without the plugin.
 
 Start a new session after changing config.
 
@@ -86,23 +93,6 @@ The suite checks: `AGENTS.md` stays in sync with the injected instructions,
 the command files parse and register, and `memory_recall` behaves against a
 fixture memory tree (search, exact range fetch, path-escape refusal, missing
 memory system) — with the real OS tools.
-
-## Deploy
-
-Publishing a version tag publishes to npmjs via OIDC trusted publishing
-(`.github/workflows/publish.yml`): tests run, then `npm publish` with no token
-(`id-token: write`, provenance attached automatically). Cut a release with:
-
-```bash
-npm version patch
-git push --follow-tags
-```
-
-One-time setup on npmjs.com: your account must own the `@rajihawa` scope, and
-you must add the **Trusted Publisher** (owner `rajihawa`, repo `memory.md`,
-workflow `publish.yml`) under your account settings. The first version is
-published manually (`npm login && npm publish`); the workflow handles every
-release after that.
 
 ## License
 
