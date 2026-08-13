@@ -60,7 +60,7 @@ test('AGENTS.md matches getMemoryInstructions()', () => {
 test('all command files parse to { description, template }', () => {
   const commandDir = path.join(ROOT, '.opencode', 'command');
   const files = fs.readdirSync(commandDir).filter((f) => f.endsWith('.md'));
-  assert.ok(files.length >= 3, 'expected at least 3 commands');
+  assert.ok(files.length >= 4, 'expected at least 4 commands');
   for (const file of files) {
     const parsed = parseCommandFile(path.join(commandDir, file));
     assert.ok(parsed, `${file} must parse`);
@@ -80,12 +80,12 @@ test('plugin module exports no functions besides default', async () => {
   }
 });
 
-test('config hook: without MEMORY.md only /memory is registered', async () => {
+test('config hook: without MEMORY.md only /memory-init is registered', async () => {
   const { default: plugin } = await import('../.opencode/plugins/memory.md.mjs');
   const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-md-bare-'));
   const config = {};
   await plugin({ directory: bare }).then((p) => p.config(config));
-  assert.deepStrictEqual(Object.keys(config.command).sort(), ['memory']);
+  assert.deepStrictEqual(Object.keys(config.command).sort(), ['memory-init']);
   assert.strictEqual(config.skills, undefined, 'no skills path without MEMORY.md');
   fs.rmSync(bare, { recursive: true, force: true });
 });
@@ -95,8 +95,25 @@ test('config hook: with MEMORY.md the full suite is registered', async () => {
   const dir = makeFixture();
   const config = {};
   await plugin({ directory: dir }).then((p) => p.config(config));
-  assert.deepStrictEqual(Object.keys(config.command).sort(), ['memory', 'memory-help', 'memory-remember']);
+  assert.deepStrictEqual(Object.keys(config.command).sort(), [
+    'memory-help',
+    'memory-info',
+    'memory-init',
+    'memory-remember',
+  ]);
   assert.ok(config.skills.paths.some((p) => p.endsWith('skills')), 'skills dir registered');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('config hook: /memory-info version placeholder is replaced', async () => {
+  const { default: plugin } = await import('../.opencode/plugins/memory.md.mjs');
+  const dir = makeFixture();
+  const config = {};
+  await plugin({ directory: dir }).then((p) => p.config(config));
+  const { version } = require('../package.json');
+  const template = config.command['memory-info'].template;
+  assert.ok(template.includes(version), 'template carries the real version');
+  assert.ok(!template.includes('{{version}}'), 'placeholder is gone');
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
@@ -145,11 +162,11 @@ test('range fetch refuses paths that escape the memory dir', async () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test('no memory system: explains and points at /memory', async () => {
+test('no memory system: explains and points at /memory-init', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-md-noroot-'));
   const out = await toolFor(dir).execute({ query: 'postgres' }, { directory: dir });
   assert.match(out, /no memory system/);
-  assert.match(out, /\/memory/);
+  assert.match(out, /\/memory-init/);
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

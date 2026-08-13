@@ -25,8 +25,9 @@ When the work is done and it produced durable knowledge (decisions, conventions,
 
 ## Tools
 - memory_recall — browse the memory (search, guide, exact line ranges). Use it instead of grep/sed/head on .memory.
+- /memory-init — (re)build the core memory layer: scans the project into basic core memories; on re-run it distills .memory/context into the cores and deletes the context files (the cycle: tasks build context, /memory-init distills it into stronger cores).
 - /memory-remember — save a new memory; also places and reindexes it.
-- /memory — initialize the memory system if it is missing.`;
+- /memory-info — memory report: version, index entries, core/context counts and sizes.`;
 
 function getMemoryInstructions() {
   return INSTRUCTIONS;

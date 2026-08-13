@@ -31,10 +31,17 @@ project/
    topic to search index + cores (read in full) + context (guide + windows
    around hits), or `api-design.md#L41-L65` to fetch exactly those lines. Path
    escapes from the memory dir are refused.
-2. **`/memory-remember`** — saves a memory: browses first, places it in the
+2. **`/memory-init`** — (re)builds the core memory layer: on a fresh project
+   it scans the codebase and seeds basic core memories (stack, conventions,
+   architecture, workflows, status); re-run it later and it distills the
+   accumulated `.memory/context/` into stronger core memories and deletes the
+   context files — the cycle continues.
+3. **`/memory-remember`** — saves a memory: browses first, places it in the
    right core or context file, updates the `MEMORY.md` index, and reindexes
    any context guide whose ranges shifted. Remembering IS reindexing.
-3. **After every task** that produced durable knowledge, the agent
+4. **`/memory-info`** — reports the system: plugin version, index entries,
+   core/context counts and sizes.
+5. **After every task** that produced durable knowledge, the agent
    automatically asks: *"Save this to memory.md?"* — accept and the remember
    flow runs. The plugin also pre-fills the prompt with the offer when a
    session goes idle, so the ask never gets skipped.
@@ -59,10 +66,11 @@ Or run from a checkout (the plugin reuses `hooks/` and `skills/`):
 ```
 
 The plugin activates per project, like `AGENTS.md`: the protocol injection,
-the `/memory-remember` and `/memory-help` commands, the `memory` skill, and the
-save-session nudge only exist where a `MEMORY.md` is found walking up from the
-project root. `/memory` is always available (it is how a project bootstraps),
-and `memory_recall` replies with an init pointer where no memory exists.
+the `/memory-remember`, `/memory-info` and `/memory-help` commands, the
+`memory` skill, and the save-session nudge only exist where a `MEMORY.md` is
+found walking up from the project root. `/memory-init` is always available (it
+is how a project bootstraps), and `memory_recall` replies with an init pointer
+where no memory exists.
 opencode also auto-loads this repo's `AGENTS.md`, so the protocol holds from a
 checkout even without the plugin.
 
@@ -72,8 +80,9 @@ Start a new session after changing config.
 
 | Command | What it does |
 |---------|--------------|
-| `/memory` | Initialize the system if missing; report the memory state. |
+| `/memory-init` | (Re)build the core memory layer: scan the project into basic core memories; on re-run, distill `.memory/context/` into the cores and delete the context files. |
 | `/memory-remember <title> [body]` | Save a memory: place it, update the index, reindex context guides. |
+| `/memory-info` | Report: plugin version, index entries, core/context counts, sizes. |
 | `/memory-help` | Quick reference card. |
 
 ## Design principles

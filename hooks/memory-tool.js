@@ -71,7 +71,7 @@ function createMemoryRecallTool({ run = defaultRun } = {}) {
           '# memory_recall: no memory system in this project (no MEMORY.md found walking up from ' +
           (context && context.directory ? context.directory : process.cwd()) +
           ').\n' +
-          'Run /memory to initialize one (creates MEMORY.md, .memory/core/, .memory/context/).'
+          'Run /memory-init to create one (scans the project and builds the core memories).'
         );
       }
 
@@ -114,7 +114,7 @@ async function search(root, query, run) {
   out.push(index.stdout.trim() || '(empty)');
   out.push('');
 
-  if (!fs.existsSync(memory)) return out.join('\n') + '# .memory/ is missing — run /memory.';
+  if (!fs.existsSync(memory)) return out.join('\n') + '# .memory/ is missing — run /memory-init.';
 
   // 2. Pick the grep engine. Relative paths + cwd: root so hits parse cleanly.
   const engine = (await hasBin(run, 'rg')) ? 'rg' : 'grep';

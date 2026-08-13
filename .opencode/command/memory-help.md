@@ -22,9 +22,16 @@ project/
 
 | Command | What it does |
 |---------|--------------|
-| `/memory` | Initialize the system if missing; report the memory state. |
+| `/memory-init` | (Re)build the core memory layer: scan the project into basic core memories; on re-run, distill `.memory/context/` into the cores and delete the context files. |
 | `/memory-remember <title> [body]` | Save a memory: place it, update the index, reindex context guides. |
+| `/memory-info` | Report: plugin version, index entries, core/context counts, sizes. |
 | `/memory-help` | This card. |
+
+## The cycle
+
+`/memory-init` seeds basic core memories → tasks build up context → the next
+`/memory-init` distills context into stronger cores and frees the context.
+Run it every so often.
 
 ## Context files
 

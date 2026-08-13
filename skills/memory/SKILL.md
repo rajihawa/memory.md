@@ -68,6 +68,34 @@ Decision: Use Postgres 16.
 Context reference: context/api-design.md#L41-L65
 ```
 
+## init / re-init (the cycle)
+
+`/memory-init` runs the whole cycle in one pass.
+
+**Init** (no MEMORY.md): create the layout (MEMORY.md, `.memory/core/`,
+`.memory/context/`), then scan the project — README, manifests, configs,
+source tree, excluding `.git/`, `node_modules/`, generated dirs — and write
+the starter core set in `.memory/core/`: `stack.md` (languages, frameworks,
+services, key deps), `conventions.md` (style, patterns, tooling),
+`architecture.md` (layout, main modules, data flow), `workflows.md`
+(build/test/run/lint commands), `status.md` (current state). Omit cores that
+do not apply. Keep every core under ~50 lines. No context files are created.
+
+**Re-init** (MEMORY.md exists): the project has moved on and context has
+accumulated, so:
+1. Re-scan the project and refresh the starter cores in place (same topics,
+   current facts — no duplicates).
+2. Read every `.memory/context/*.md` file in full (guide and all sections).
+   Distill the durable knowledge into the core layer: extend the matching
+   core file when the topic already exists, create a new core file otherwise,
+   drop ephemeral detail. Remove now-dangling `Context reference:` lines that
+   point at deleted context files.
+3. Rewrite the MEMORY.md index: one line per core file.
+4. Delete every context file — the cycle continues: new tasks rebuild
+   context, the next `/memory-init` distills it into stronger cores.
+
+Report what was created, updated, and deleted.
+
 ## remember flow (remember + reindex in one operation)
 
 1. **Browse first** with the memory_recall tool — never duplicate existing

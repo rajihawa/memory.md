@@ -1,9 +1,9 @@
 // memory.md — OpenCode plugin.
 //
 // Per-project activation, like AGENTS.md: the protocol injection, the
-// remember/help commands, the memory skill, and the save-session nudge only
-// exist where a MEMORY.md is found walking up from the project directory.
-// /memory stays available everywhere so a fresh project can bootstrap the
+// remember/info/help commands, the memory skill, and the save-session nudge
+// only exist where a MEMORY.md is found walking up from the project directory.
+// /memory-init stays available everywhere so a fresh project can bootstrap the
 // system; memory_recall self-guards with an init pointer when absent.
 //
 // IMPORTANT: this module must export ONLY the default export (a function).
@@ -24,6 +24,7 @@ const require = createRequire(import.meta.url);
 const { createMemoryRecallTool, findMemoryRoot } = require('../../hooks/memory-tool');
 const { getMemoryInstructions } = require('../../hooks/memory-instructions');
 const { parseCommandFile } = require('../../hooks/command-file');
+const { version } = require('../../package.json');
 
 export default async ({ client, directory } = {}) => {
   const hasMemory = !!findMemoryRoot(directory || process.cwd());
@@ -32,7 +33,7 @@ export default async ({ client, directory } = {}) => {
       client && client.app && client.app.log({ body: { service: 'memory.md', level, message } });
     } catch (e) {}
   };
-  log('info', hasMemory ? 'plugin loaded (memory active)' : 'plugin loaded (no MEMORY.md — /memory to init)');
+  log('info', hasMemory ? 'plugin loaded (memory active)' : 'plugin loaded (no MEMORY.md — /memory-init to init)');
 
   return {
     // The browse tool: search cores, dig into context guides and line ranges.
@@ -41,17 +42,23 @@ export default async ({ client, directory } = {}) => {
       memory_recall: createMemoryRecallTool(),
     },
 
-    // Register slash commands + the skills directory. /memory always (that is
-    // how a project bootstraps); remember/help and the skill only with memory.
+    // Register slash commands + the skills directory. /memory-init always
+    // (that is how a project bootstraps); remember/info/help and the skill
+    // only with memory.
     config: async (config) => {
       if (!config.command) config.command = {};
       const commandDir = path.join(__dirname, '..', 'command');
       try {
         for (const file of fs.readdirSync(commandDir).filter((f) => f.endsWith('.md'))) {
-          if (!hasMemory && file !== 'memory.md') continue;
+          if (!hasMemory && file !== 'memory-init.md') continue;
           const name = path.basename(file, '.md');
           const parsed = parseCommandFile(path.join(commandDir, file));
-          if (parsed) config.command[name] = parsed;
+          if (parsed) {
+            config.command[name] = {
+              description: parsed.description,
+              template: file === 'memory-info.md' ? parsed.template.replaceAll('{{version}}', version) : parsed.template,
+            };
+          }
         }
       } catch (e) {}
 
