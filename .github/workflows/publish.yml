@@ -23,4 +23,17 @@ jobs:
       # provenance is attached automatically. access set in publishConfig.
       - name: Test
         run: npm test
+
+      # Facts, not guesses: is GitHub granting an OIDC token for npm at all?
+      - name: Verify OIDC token
+        run: |
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "OIDC URL missing — id-token permission not granted" && exit 1
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=registry.npmjs.org")
+          echo "OIDC token endpoint HTTP: $code"
+          [ "$code" = "200" ] || { echo "GitHub refused the token — check workflow permissions"; exit 1; }
+
       - run: npm publish
