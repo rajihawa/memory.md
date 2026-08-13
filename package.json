@@ -1,0 +1,43 @@
+{
+    "name": "@rajihawa/memory.md",
+    "version": "0.0.1",
+      "description": "local and simple agent memory",
+    "keywords": [
+        "opencode-plugin",
+        "opencode",
+        "memory.md",
+        "skills"
+    ],
+    "main": "./.opencode/plugins/memory.md.mjs",
+    "exports": {
+        ".": "./.opencode/plugins/memory.md.mjs",
+        "./plugin": "./.opencode/plugins/memory.md.mjs"
+    },
+    "files": [
+        "AGENTS.md",
+        "hooks/",
+        "skills/",
+        ".opencode/",
+        "LICENSE"
+    ],
+    "homepage": "https://github.com/rajihawa/memory.md",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rajihawa/memory.md.git"
+    },
+    "bugs": {
+        "url": "https://github.com/rajihawa/memory.md/issues"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://npm.pkg.github.com"
+    },
+    "scripts": {
+        "test": "node --test tests/*.test.js"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Raji Hawa",
+        "url": "https://github.com/rajihawa"
+    }
+}
