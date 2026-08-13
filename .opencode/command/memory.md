@@ -11,5 +11,6 @@ Set up the project's memory system if it is missing, then report its state.
    - List every entry in the MEMORY.md index (core memory name + one-line description)
    - For each file in `.memory/context/`, show its `@guide` pointer (line 1) so the user knows what context exists
    - If the memory system already exists and is in good shape, just report it; do not modify anything.
+3. If you just created the system, tell the user that a restart activates the full memory suite (the /memory-remember and /memory-help commands and the memory skill); the memory_recall tool already works right away.
 
 Read the memory skill first if you need the full layout rules.

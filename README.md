@@ -41,7 +41,7 @@ project/
 
 ## Install
 
-Add to your `opencode.json`:
+Add to your `opencode.json` — no registry config, no tokens:
 
 ```json
 { "plugin": ["@rajihawa/memory.md"] }
@@ -53,11 +53,11 @@ Or run from a checkout (the plugin reuses `hooks/` and `skills/`):
 { "plugin": ["./.opencode/plugins/memory.md.mjs"] }
 ```
 
-The plugin registers the `memory_recall` tool, the `/memory*` commands, and
-the `memory` skill, and injects the protocol into the system prompt whenever
-the project has a `MEMORY.md` (zero cost in projects without one). opencode
-also auto-loads this repo's `AGENTS.md`, so the protocol holds from a checkout
-even without the plugin.
+The plugin activates per project, like `AGENTS.md`: the protocol injection,
+the `/memory-remember` and `/memory-help` commands, the `memory` skill, and the
+save-session nudge only exist where a `MEMORY.md` is found walking up from the
+project root. `/memory` is always available (it is how a project bootstraps),
+and `memory_recall` replies with an init pointer where no memory exists.
 
 Start a new session after changing config.
 
@@ -89,20 +89,20 @@ memory system) — with the real OS tools.
 
 ## Deploy
 
-Publishing a version tag auto-publishes to GitHub Packages
-(`.github/workflows/publish.yml`): tests run, then `npm publish` with the
-automatic `GITHUB_TOKEN` — no secrets to set up. Cut a release with:
+Publishing a version tag publishes to npmjs via OIDC trusted publishing
+(`.github/workflows/publish.yml`): tests run, then `npm publish` with no token
+(`id-token: write`, provenance attached automatically). Cut a release with:
 
 ```bash
 npm version patch
 git push --follow-tags
 ```
 
-Install from GitHub Packages needs a `.npmrc` pointing at the registry:
-
-```ini
-@rajihawa:registry=https://npm.pkg.github.com
-```
+One-time setup on npmjs.com: your account must own the `@rajihawa` scope, and
+you must add the **Trusted Publisher** (owner `rajihawa`, repo `memory.md`,
+workflow `publish.yml`) under your account settings. The first version is
+published manually (`npm login && npm publish`); the workflow handles every
+release after that.
 
 ## License
 

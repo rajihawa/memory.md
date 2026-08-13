@@ -1,9 +1,10 @@
 // memory.md — OpenCode plugin.
 //
-// Registers the memory_recall tool, the /memory* commands, and the memory
-// skill directory so they work when the package is installed from npm; injects
-// the memory protocol into the system prompt whenever the project has a
-// MEMORY.md; and nudges the user to save the session when it goes idle.
+// Per-project activation, like AGENTS.md: the protocol injection, the
+// remember/help commands, the memory skill, and the save-session nudge only
+// exist where a MEMORY.md is found walking up from the project directory.
+// /memory stays available everywhere so a fresh project can bootstrap the
+// system; memory_recall self-guards with an init pointer when absent.
 //
 // Add to your opencode.json:
 //   { "plugin": ["@rajihawa/memory.md"] }
@@ -28,28 +29,41 @@ export function parseCommandFile(filePath) {
 }
 
 export default async ({ client, directory } = {}) => {
+  const hasMemory = !!findMemoryRoot(directory || process.cwd());
+  const log = (level, message) => {
+    try {
+      client && client.app && client.app.log({ body: { service: 'memory.md', level, message } });
+    } catch (e) {}
+  };
+  log('info', hasMemory ? 'plugin loaded (memory active)' : 'plugin loaded (no MEMORY.md — /memory to init)');
+
   return {
     // The browse tool: search cores, dig into context guides and line ranges.
+    // Always registered; without MEMORY.md it replies with an init pointer.
     tool: {
       memory_recall: createMemoryRecallTool(),
     },
 
-    // Register slash commands + the skills directory.
+    // Register slash commands + the skills directory. /memory always (that is
+    // how a project bootstraps); remember/help and the skill only with memory.
     config: async (config) => {
       if (!config.command) config.command = {};
       const commandDir = path.join(__dirname, '..', 'command');
       try {
         for (const file of fs.readdirSync(commandDir).filter((f) => f.endsWith('.md'))) {
+          if (!hasMemory && file !== 'memory.md') continue;
           const name = path.basename(file, '.md');
           const parsed = parseCommandFile(path.join(commandDir, file));
           if (parsed) config.command[name] = parsed;
         }
       } catch (e) {}
 
-      config.skills = config.skills || {};
-      config.skills.paths = config.skills.paths || [];
-      const skillsDir = path.resolve(__dirname, '../../skills');
-      if (!config.skills.paths.includes(skillsDir)) config.skills.paths.push(skillsDir);
+      if (hasMemory) {
+        config.skills = config.skills || {};
+        config.skills.paths = config.skills.paths || [];
+        const skillsDir = path.resolve(__dirname, '../../skills');
+        if (!config.skills.paths.includes(skillsDir)) config.skills.paths.push(skillsDir);
+      }
     },
 
     // Inject the protocol every turn, but only in projects that have memory.
@@ -64,7 +78,7 @@ export default async ({ client, directory } = {}) => {
     // ponytail: agent-driven ask (see protocol) is the primary mechanism; this
     // is a UI backup for when the model skips it.
     event: async ({ event }) => {
-      if (event.type !== 'session.idle') return;
+      if (event.type !== 'session.idle' || !hasMemory) return;
       try {
         await client.tui.appendPrompt({ body: { text: '/memory-remember — save this session?' } });
       } catch (e) {}

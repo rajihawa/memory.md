@@ -6,25 +6,21 @@ on:
   workflow_dispatch:
 
 permissions:
+  id-token: write
   contents: read
-  packages: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: https://npm.pkg.github.com
-          scope: '@rajihawa'
-
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; Node 22 ships npm 10.
+      - run: npm install -g npm@latest
+      # No token: id-token: write above lets npm authenticate via OIDC, and
+      # provenance is attached automatically. access set in publishConfig.
       - name: Test
         run: npm test
-
-      - name: Publish to GitHub Packages
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm publish

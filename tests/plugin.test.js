@@ -69,14 +69,24 @@ test('all command files parse to { description, template }', () => {
   }
 });
 
-test('config hook registers commands and the skills path', async () => {
+test('config hook: without MEMORY.md only /memory is registered', async () => {
   const { default: plugin } = await import('../.opencode/plugins/memory.md.mjs');
+  const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-md-bare-'));
   const config = {};
-  await plugin({}).then((p) => p.config(config));
-  assert.ok(config.command['memory'], 'memory command registered');
-  assert.ok(config.command['memory-remember'], 'memory-remember registered');
-  assert.ok(config.command['memory-help'], 'memory-help registered');
+  await plugin({ directory: bare }).then((p) => p.config(config));
+  assert.deepStrictEqual(Object.keys(config.command).sort(), ['memory']);
+  assert.strictEqual(config.skills, undefined, 'no skills path without MEMORY.md');
+  fs.rmSync(bare, { recursive: true, force: true });
+});
+
+test('config hook: with MEMORY.md the full suite is registered', async () => {
+  const { default: plugin } = await import('../.opencode/plugins/memory.md.mjs');
+  const dir = makeFixture();
+  const config = {};
+  await plugin({ directory: dir }).then((p) => p.config(config));
+  assert.deepStrictEqual(Object.keys(config.command).sort(), ['memory', 'memory-help', 'memory-remember']);
   assert.ok(config.skills.paths.some((p) => p.endsWith('skills')), 'skills dir registered');
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 // --- memory_recall tool -----------------------------------------------------
