@@ -89,9 +89,14 @@ memory system) — with the real OS tools.
 
 ## Deploy
 
-Pushing to `main` auto-publishes to GitHub Packages (`.github/workflows/publish.yml`):
-tests run, the patch version bumps, the package publishes, and the bump is
-committed back. Auth uses the automatic `GITHUB_TOKEN` — no secrets to set up.
+Publishing a version tag auto-publishes to GitHub Packages
+(`.github/workflows/publish.yml`): tests run, then `npm publish` with the
+automatic `GITHUB_TOKEN` — no secrets to set up. Cut a release with:
+
+```bash
+npm version patch
+git push --follow-tags
+```
 
 Install from GitHub Packages needs a `.npmrc` pointing at the registry:
 
