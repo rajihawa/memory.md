@@ -29,7 +29,8 @@
         "url": "https://github.com/rajihawa/memory.md/issues"
     },
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "registry": "https://npm.pkg.github.com"
     },
     "scripts": {
         "test": "node --test tests/*.test.js"
